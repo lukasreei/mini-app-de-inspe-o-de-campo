@@ -5,25 +5,17 @@ import 'api_config.dart';
 import 'auth_interceptor.dart';
 
 class ApiClient {
-  ApiClient({
-    required TokenStorage tokenStorage,
-  }) {
+  ApiClient({required TokenStorage tokenStorage}) {
     dio = Dio(
       BaseOptions(
         baseUrl: ApiConfig.baseUrl,
         connectTimeout: ApiConfig.connectTimeout,
         receiveTimeout: ApiConfig.receiveTimeout,
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: {'Accept': 'application/json'},
       ),
     );
 
-    dio.interceptors.add(
-      AuthInterceptor(
-        tokenStorage: tokenStorage,
-      ),
-    );
+    dio.interceptors.add(AuthInterceptor(tokenStorage: tokenStorage));
   }
 
   late final Dio dio;

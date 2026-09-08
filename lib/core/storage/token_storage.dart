@@ -5,26 +5,18 @@ class TokenStorage {
 
   final FlutterSecureStorage _storage;
 
-  TokenStorage({
-    FlutterSecureStorage? storage,
-  }) : _storage = storage ?? const FlutterSecureStorage();
+  TokenStorage({FlutterSecureStorage? storage})
+    : _storage = storage ?? const FlutterSecureStorage();
 
   Future<void> saveToken(String token) async {
-    await _storage.write(
-      key: _accessTokenKey,
-      value: token,
-    );
+    await _storage.write(key: _accessTokenKey, value: token);
   }
 
   Future<String?> getToken() {
-    return _storage.read(
-      key: _accessTokenKey,
-    );
+    return _storage.read(key: _accessTokenKey);
   }
 
   Future<void> deleteToken() {
-    return _storage.delete(
-      key: _accessTokenKey,
-    );
+    return _storage.delete(key: _accessTokenKey);
   }
 }
