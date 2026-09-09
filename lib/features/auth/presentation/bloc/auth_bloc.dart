@@ -7,8 +7,8 @@ import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({required AuthRepository authRepository})
-      : _authRepository = authRepository,
-        super(const AuthInitial()) {
+    : _authRepository = authRepository,
+      super(const AuthInitial()) {
     on<AuthStarted>(_onStarted);
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
@@ -16,10 +16,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final AuthRepository _authRepository;
 
-  Future<void> _onStarted(
-      AuthStarted event,
-      Emitter<AuthState> emit,
-      ) async {
+  Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
     final hasToken = await _authRepository.hasToken();
 
     if (!hasToken) {
@@ -44,9 +41,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLoginRequested(
-      LoginRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    LoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoading());
 
     try {
@@ -57,24 +54,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       emit(AuthAuthenticated(user: response.user));
     } on DioException catch (error) {
-      emit(
-        AuthFailure(
-          message: _getErrorMessage(error),
-        ),
-      );
+      emit(AuthFailure(message: _getErrorMessage(error)));
     } catch (_) {
-      emit(
-        const AuthFailure(
-          message: 'Não foi possível realizar o login.',
-        ),
-      );
+      emit(const AuthFailure(message: 'Não foi possível realizar o login.'));
     }
   }
 
   Future<void> _onLogoutRequested(
-      LogoutRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    LogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     await _authRepository.logout();
 
     emit(const AuthUnauthenticated());
