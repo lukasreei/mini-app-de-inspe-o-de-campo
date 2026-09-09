@@ -7,6 +7,7 @@ import 'inspection_form_state.dart';
 import '../../data/repositories/inspections_repository.dart';
 
 import '../../data/models/inspection_draft_model.dart';
+import '../../data/models/inspection_sync_result.dart';
 
 class InspectionFormBloc
     extends Bloc<InspectionFormEvent, InspectionFormState> {
@@ -213,15 +214,39 @@ class InspectionFormBloc
         photoPath: state.photoPath,
         latitude: state.latitude,
         longitude: state.longitude,
-        capturedAt: DateTime.now(),
+        capturedAt: DateTime.now().toUtc(),
       );
 
-      emit(
-        state.copyWith(
-          saveStatus: InspectionFormSaveStatus.pendingSaved,
-          saveMessage: 'Inspeção concluída e aguardando sincronização.',
-        ),
+      final syncResult = await _inspectionsRepository.syncInspection(
+        state.clientId,
       );
+
+      switch (syncResult) {
+        case InspectionSyncResult.synced:
+          emit(
+            state.copyWith(
+              saveStatus: InspectionFormSaveStatus.synced,
+              saveMessage: 'Inspeção sincronizada com sucesso.',
+            ),
+          );
+
+        case InspectionSyncResult.pending:
+          emit(
+            state.copyWith(
+              saveStatus: InspectionFormSaveStatus.pendingSaved,
+              saveMessage:
+                  'Inspeção salva localmente e aguardando sincronização.',
+            ),
+          );
+
+        case InspectionSyncResult.failed:
+          emit(
+            state.copyWith(
+              saveStatus: InspectionFormSaveStatus.syncFailed,
+              saveMessage: 'Inspeção salva, mas a sincronização falhou.',
+            ),
+          );
+      }
     } catch (_) {
       emit(
         state.copyWith(

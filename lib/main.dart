@@ -10,6 +10,7 @@ import 'features/work_orders/data/repositories/work_orders_repository.dart';
 import 'core/database/app_database.dart';
 import 'features/inspections/data/datasources/inspections_local_data_source.dart';
 import 'features/inspections/data/repositories/inspections_repository.dart';
+import 'features/inspections/data/datasources/inspections_remote_data_source.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,8 +40,13 @@ void main() {
     database: database,
   );
 
+  final inspectionsRemoteDataSource = InspectionsRemoteDataSource(
+    apiClient: apiClient,
+  );
+
   final inspectionsRepository = InspectionsRepository(
     localDataSource: inspectionsLocalDataSource,
+    remoteDataSource: inspectionsRemoteDataSource,
   );
 
   runApp(

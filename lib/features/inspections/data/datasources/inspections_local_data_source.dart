@@ -79,4 +79,80 @@ class InspectionsLocalDataSource {
           ..limit(1))
         .getSingleOrNull();
   }
+
+  Future<List<LocalInspection>> getPending() {
+    return (_database.select(_database.inspections)..where(
+          (table) => table.syncStatus.equals(InspectionSyncStatus.pending.name),
+        ))
+        .get();
+  }
+
+  Future<void> registerSyncAttempt(String clientId) async {
+    final inspection = await getByClientId(clientId);
+
+    if (inspection == null) {
+      return;
+    }
+
+    final now = DateTime.now();
+
+    await (_database.update(
+      _database.inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        syncAttempts: Value(inspection.syncAttempts + 1),
+        lastSyncAttemptAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  Future<void> markSynced({
+    required String clientId,
+    required String serverId,
+  }) async {
+    final now = DateTime.now();
+
+    await (_database.update(
+      _database.inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        syncStatus: Value(InspectionSyncStatus.synced.name),
+        serverId: Value(serverId),
+        errorMessage: const Value(null),
+        syncedAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  Future<void> markPending({
+    required String clientId,
+    String? errorMessage,
+  }) async {
+    await (_database.update(
+      _database.inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        syncStatus: Value(InspectionSyncStatus.pending.name),
+        errorMessage: Value(errorMessage),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> markFailed({
+    required String clientId,
+    required String errorMessage,
+  }) async {
+    await (_database.update(
+      _database.inspections,
+    )..where((table) => table.clientId.equals(clientId))).write(
+      InspectionsCompanion(
+        syncStatus: Value(InspectionSyncStatus.failed.name),
+        errorMessage: Value(errorMessage),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
 }

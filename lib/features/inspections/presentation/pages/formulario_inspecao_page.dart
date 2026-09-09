@@ -33,7 +33,9 @@ class FormularioInspecaoPage extends StatelessWidget {
               ..showSnackBar(SnackBar(content: Text(state.saveMessage!)));
           }
 
-          if (state.saveStatus == InspectionFormSaveStatus.pendingSaved) {
+          if (state.saveStatus == InspectionFormSaveStatus.pendingSaved ||
+              state.saveStatus == InspectionFormSaveStatus.synced ||
+              state.saveStatus == InspectionFormSaveStatus.syncFailed) {
             Navigator.of(context).pop();
           }
         },

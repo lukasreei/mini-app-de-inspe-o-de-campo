@@ -1,5 +1,3 @@
-import '../models/inspection_draft_model.dart';
-
 class InspectionDraftModel {
   const InspectionDraftModel({
     required this.clientId,

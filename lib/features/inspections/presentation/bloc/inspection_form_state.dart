@@ -3,6 +3,8 @@ enum InspectionFormSaveStatus {
   saving,
   draftSaved,
   pendingSaved,
+  synced,
+  syncFailed,
   failure,
 }
 
