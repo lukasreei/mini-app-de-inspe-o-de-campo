@@ -110,15 +110,25 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   FilledButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
+                      final inspectionsRepository = context
+                          .read<InspectionsRepository>();
+
+                      final draft = await inspectionsRepository
+                          .getDraftForWorkOrder(workOrder.id);
+
+                      if (!context.mounted) {
+                        return;
+                      }
+
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => BlocProvider(
                             create: (_) => InspectionFormBloc(
                               workOrderId: workOrder.id,
                               deviceService: InspectionDeviceService(),
-                              inspectionsRepository: context
-                                  .read<InspectionsRepository>(),
+                              inspectionsRepository: inspectionsRepository,
+                              initialDraft: draft,
                             ),
                             child: const FormularioInspecaoPage(),
                           ),

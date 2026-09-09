@@ -1,6 +1,7 @@
 import '../../../../core/database/app_database.dart';
 import '../datasources/inspections_local_data_source.dart';
 import '../models/inspection_sync_status.dart';
+import '../models/inspection_draft_model.dart';
 
 class InspectionsRepository {
   InspectionsRepository({required InspectionsLocalDataSource localDataSource})
@@ -58,5 +59,25 @@ class InspectionsRepository {
 
   Stream<List<LocalInspection>> watchAll() {
     return _localDataSource.watchAll();
+  }
+
+  Future<InspectionDraftModel?> getDraftForWorkOrder(String workOrderId) async {
+    final inspection = await _localDataSource.getLatestDraftByWorkOrderId(
+      workOrderId,
+    );
+
+    if (inspection == null) {
+      return null;
+    }
+
+    return InspectionDraftModel(
+      clientId: inspection.clientId,
+      workOrderId: inspection.workOrderId,
+      observation: inspection.observation ?? '',
+      condition: inspection.condition,
+      photoPath: inspection.photoPath,
+      latitude: inspection.latitude,
+      longitude: inspection.longitude,
+    );
   }
 }

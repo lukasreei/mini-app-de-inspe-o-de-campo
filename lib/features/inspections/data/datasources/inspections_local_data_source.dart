@@ -67,4 +67,16 @@ class InspectionsLocalDataSource {
       _database.inspections,
     )..orderBy([(table) => OrderingTerm.desc(table.updatedAt)])).watch();
   }
+
+  Future<LocalInspection?> getLatestDraftByWorkOrderId(String workOrderId) {
+    return (_database.select(_database.inspections)
+          ..where(
+            (table) =>
+                table.workOrderId.equals(workOrderId) &
+                table.syncStatus.equals(InspectionSyncStatus.draft.name),
+          )
+          ..orderBy([(table) => OrderingTerm.desc(table.updatedAt)])
+          ..limit(1))
+        .getSingleOrNull();
+  }
 }

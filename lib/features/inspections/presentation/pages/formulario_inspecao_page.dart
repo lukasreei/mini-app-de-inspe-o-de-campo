@@ -58,6 +58,7 @@ class FormularioInspecaoPage extends StatelessWidget {
               const SizedBox(height: 24),
 
               TextFormField(
+                initialValue: state.observation,
                 maxLines: 5,
                 minLines: 3,
                 decoration: const InputDecoration(

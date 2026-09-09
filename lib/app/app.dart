@@ -28,25 +28,17 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider.value(
-          value: workOrdersRepository,
-        ),
-        RepositoryProvider.value(
-          value: inspectionsRepository,
-        ),
+        RepositoryProvider.value(value: workOrdersRepository),
+        RepositoryProvider.value(value: inspectionsRepository),
       ],
       child: BlocProvider(
         create: (_) =>
-        AuthBloc(
-          authRepository: authRepository,
-        )..add(const AuthStarted()),
+            AuthBloc(authRepository: authRepository)..add(const AuthStarted()),
         child: MaterialApp(
           title: 'Inspeção de Campo',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.blue,
-            ),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
             useMaterial3: true,
           ),
           home: const _AuthGate(),
@@ -63,23 +55,17 @@ class _AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        if (state is AuthInitial ||
-            state is AuthLoading) {
+        if (state is AuthInitial || state is AuthLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is AuthAuthenticated) {
           return BlocProvider(
             create: (_) => WorkOrdersBloc(
-              workOrdersRepository:
-              context.read<WorkOrdersRepository>(),
-            )..add(
-              const WorkOrdersRequested(),
-            ),
+              workOrdersRepository: context.read<WorkOrdersRepository>(),
+            )..add(const WorkOrdersRequested()),
             child: const OrdensServicoPage(),
           );
         }

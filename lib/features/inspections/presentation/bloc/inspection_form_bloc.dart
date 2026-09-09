@@ -6,9 +6,12 @@ import 'inspection_form_event.dart';
 import 'inspection_form_state.dart';
 import '../../data/repositories/inspections_repository.dart';
 
+import '../../data/models/inspection_draft_model.dart';
+
 class InspectionFormBloc
     extends Bloc<InspectionFormEvent, InspectionFormState> {
   InspectionFormBloc({
+    InspectionDraftModel? initialDraft,
     required String workOrderId,
     required InspectionDeviceService deviceService,
     required InspectionsRepository inspectionsRepository,
@@ -17,8 +20,13 @@ class InspectionFormBloc
        _inspectionsRepository = inspectionsRepository,
        super(
          InspectionFormState(
-           clientId: (uuid ?? const Uuid()).v4(),
+           clientId: initialDraft?.clientId ?? (uuid ?? const Uuid()).v4(),
            workOrderId: workOrderId,
+           observation: initialDraft?.observation ?? '',
+           condition: initialDraft?.condition,
+           photoPath: initialDraft?.photoPath,
+           latitude: initialDraft?.latitude,
+           longitude: initialDraft?.longitude,
          ),
        ) {
     on<InspectionObservationChanged>(_onObservationChanged);
