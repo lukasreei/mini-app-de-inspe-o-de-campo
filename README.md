@@ -142,7 +142,7 @@ Inspeção enviada com sucesso para a API.
 
 #### `failed`
 
-A API rejeitou a sincronização e uma mensagem de erro é armazenada para apresentação ao usuário.
+A sincronização falhou de forma definitiva e uma mensagem de erro é armazenada para apresentação ao usuário.
 
 ## Estratégia offline-first
 
@@ -268,7 +268,7 @@ mock-api/
 ### 1. Clonar o projeto
 
 ```bash
-git clone <https://github.com/lukasreei/mini-app-de-inspe-o-de-campo.git>
+git clone https://github.com/lukasreei/mini-app-de-inspe-o-de-campo.git
 cd mini-app-de-inspe-o-de-campo
 ```
 
@@ -304,17 +304,31 @@ http://10.0.2.2:3000
 
 O aplicativo está configurado para utilizar esse endereço durante o desenvolvimento no Android Emulator.
 
-## Dispositivo físico
-
-Caso seja utilizado um dispositivo Android físico, o endereço da API precisa apontar para o IP da máquina na rede local.
-
-Exemplo:
+A configuração está localizada em:
 
 ```text
-http://192.168.0.10:3000
+lib/core/network/api_config.dart
 ```
 
-O computador e o dispositivo devem estar conectados à mesma rede.
+## Dispositivo físico
+
+Caso seja utilizado um dispositivo Android físico, a `baseUrl` precisa apontar para o IP da máquina na rede local.
+
+Altere o arquivo:
+
+```text
+lib/core/network/api_config.dart
+```
+
+Por exemplo:
+
+```dart
+abstract final class ApiConfig {
+  static const String baseUrl = 'http://192.168.0.10:3000';
+}
+```
+
+O computador e o dispositivo Android devem estar conectados à mesma rede.
 
 ## Executar o aplicativo
 
@@ -394,30 +408,45 @@ O identificador é criado localmente e preservado durante as tentativas de sincr
 ## Limitações conhecidas
 
 * O endereço padrão da API está direcionado ao Android Emulator.
-* Em dispositivo físico é necessário configurar o IP da máquina.
+* Em dispositivo físico é necessário alterar a `baseUrl` para o IP da máquina.
 * O cache das ordens somente estará disponível após pelo menos uma consulta online bem-sucedida.
 * A detecção de conectividade não garante que a API esteja acessível; a requisição HTTP continua sendo a fonte definitiva para determinar sucesso ou falha.
 * A API mock mantém informações de autenticação em memória; reiniciar o servidor pode invalidar uma sessão já autenticada.
 * O projeto não implementa os itens opcionais de formulário dinâmico, geofence, dark mode e CI.
 * O projeto está focado em Android, conforme solicitado pelo desafio.
 
+## O que faria com mais tempo
+
+Com mais tempo, algumas evoluções que eu implementaria seriam:
+
+* ampliar a cobertura de testes unitários e de BLoC
+* adicionar testes de integração do fluxo offline → online
+* implementar formulário dinâmico utilizando `GET /work-orders/:id/form-schema`
+* adicionar geofence simples com alerta quando o técnico estiver a mais de 200 metros do ponto da OS
+* implementar dark mode
+* adicionar CI para executar análise estática e testes automaticamente
+* implementar estratégia de retry com backoff
+* aprimorar logs e observabilidade da fila de sincronização
+* melhorar acessibilidade e experiência de uso em ambientes externos
+
 ## Comandos úteis
 
-Análise estática:
+### Análise estática
 
 ```bash
 flutter analyze
 ```
 
-Testes:
+### Testes
 
 ```bash
 flutter test
 ```
 
-Formatar o projeto:
+### Formatação
 
 ```bash
 dart format lib test
 ```
+
 
