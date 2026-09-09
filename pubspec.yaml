@@ -1,5 +1,5 @@
 name: mini_app_de_inspecao_de_campo
-description: "A new Flutter project."
+description: "Mini app Flutter de inspeção de campo com suporte offline e sincronização."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -47,6 +47,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.6.0+eol
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
+  another_flushbar: ^2.2.4
 
 dev_dependencies:
   flutter_test:

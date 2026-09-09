@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_flushbar.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -59,20 +60,26 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Icon(Icons.engineering_outlined, size: 72),
+
                     const SizedBox(height: 24),
+
                     Text(
                       'Inspeção de Campo',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
+
                     const SizedBox(height: 8),
+
                     Text(
                       'Acesse sua conta para visualizar '
                       'as ordens de serviço.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
+
                     const SizedBox(height: 32),
+
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -89,7 +96,9 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
+
                     const SizedBox(height: 16),
+
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
@@ -119,15 +128,17 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       onFieldSubmitted: (_) => _login(),
                     ),
+
                     const SizedBox(height: 24),
+
                     BlocConsumer<AuthBloc, AuthState>(
                       listener: (context, state) {
                         if (state is AuthFailure) {
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(content: Text(state.message)),
-                            );
+                          showAppFlushbar(
+                            context,
+                            message: state.message,
+                            type: AppFlushbarType.error,
+                          );
                         }
                       },
                       builder: (context, state) {
