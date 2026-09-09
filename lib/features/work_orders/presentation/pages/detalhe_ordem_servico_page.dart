@@ -5,6 +5,10 @@ import '../bloc/work_order_detail_bloc.dart';
 import '../bloc/work_order_detail_event.dart';
 import '../bloc/work_order_detail_state.dart';
 
+import '../../../inspections/data/services/inspection_device_service.dart';
+import '../../../inspections/presentation/bloc/inspection_form_bloc.dart';
+import '../../../inspections/presentation/pages/formulario_inspecao_page.dart';
+
 class DetalheOrdemServicoPage extends StatelessWidget {
   const DetalheOrdemServicoPage({required this.workOrderId, super.key});
 
@@ -102,6 +106,28 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                       children: [Text(workOrder.notes!)],
                     ),
                   ],
+                  const SizedBox(height: 24),
+
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_) => InspectionFormBloc(
+                              workOrderId: workOrder.id,
+                              deviceService: InspectionDeviceService(),
+                            ),
+                            child: const FormularioInspecaoPage(),
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.fact_check_outlined),
+                    label: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: Text('Iniciar inspeção'),
+                    ),
+                  ),
                 ],
               ),
             );

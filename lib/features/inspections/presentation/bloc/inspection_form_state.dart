@@ -1,0 +1,63 @@
+class InspectionFormState {
+  const InspectionFormState({
+    required this.clientId,
+    required this.workOrderId,
+    this.observation = '',
+    this.condition,
+    this.photoPath,
+    this.latitude,
+    this.longitude,
+    this.isCapturingPhoto = false,
+    this.isGettingLocation = false,
+    this.errorMessage,
+  });
+
+  final String clientId;
+  final String workOrderId;
+
+  final String observation;
+  final String? condition;
+
+  final String? photoPath;
+
+  final double? latitude;
+  final double? longitude;
+
+  final bool isCapturingPhoto;
+  final bool isGettingLocation;
+
+  final String? errorMessage;
+
+  bool get hasLocation => latitude != null && longitude != null;
+
+  bool get canComplete =>
+      observation.trim().length >= 10 &&
+      condition != null &&
+      photoPath != null &&
+      hasLocation;
+
+  InspectionFormState copyWith({
+    String? observation,
+    String? condition,
+    String? photoPath,
+    double? latitude,
+    double? longitude,
+    bool? isCapturingPhoto,
+    bool? isGettingLocation,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return InspectionFormState(
+      clientId: clientId,
+      workOrderId: workOrderId,
+      observation: observation ?? this.observation,
+      condition: condition ?? this.condition,
+      photoPath: photoPath ?? this.photoPath,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isCapturingPhoto: isCapturingPhoto ?? this.isCapturingPhoto,
+      isGettingLocation: isGettingLocation ?? this.isGettingLocation,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    );
+  }
+}
