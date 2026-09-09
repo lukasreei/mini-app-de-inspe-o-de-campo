@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'app/app.dart';
+import 'core/database/app_database.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/token_storage.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
+import 'features/inspections/data/datasources/inspections_local_data_source.dart';
+import 'features/inspections/data/datasources/inspections_remote_data_source.dart';
+import 'features/inspections/data/repositories/inspections_repository.dart';
+import 'features/work_orders/data/datasources/work_orders_local_data_source.dart';
 import 'features/work_orders/data/datasources/work_orders_remote_data_source.dart';
 import 'features/work_orders/data/repositories/work_orders_repository.dart';
-import 'core/database/app_database.dart';
-import 'features/inspections/data/datasources/inspections_local_data_source.dart';
-import 'features/inspections/data/repositories/inspections_repository.dart';
-import 'features/inspections/data/datasources/inspections_remote_data_source.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,9 @@ void main() {
 
   final apiClient = ApiClient(tokenStorage: tokenStorage);
 
+  final database = AppDatabase();
+
+  // AUTH
   final authRemoteDataSource = AuthRemoteDataSource(apiClient: apiClient);
 
   final authRepository = AuthRepository(
@@ -26,16 +30,21 @@ void main() {
     tokenStorage: tokenStorage,
   );
 
+  // WORK ORDERS
   final workOrdersRemoteDataSource = WorkOrdersRemoteDataSource(
     apiClient: apiClient,
   );
 
-  final workOrdersRepository = WorkOrdersRepository(
-    remoteDataSource: workOrdersRemoteDataSource,
+  final workOrdersLocalDataSource = WorkOrdersLocalDataSource(
+    database: database,
   );
 
-  final database = AppDatabase();
+  final workOrdersRepository = WorkOrdersRepository(
+    remoteDataSource: workOrdersRemoteDataSource,
+    localDataSource: workOrdersLocalDataSource,
+  );
 
+  // INSPECTIONS
   final inspectionsLocalDataSource = InspectionsLocalDataSource(
     database: database,
   );

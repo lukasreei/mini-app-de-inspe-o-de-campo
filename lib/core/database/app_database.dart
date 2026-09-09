@@ -41,10 +41,54 @@ class Inspections extends Table {
   Set<Column<Object>> get primaryKey => {clientId};
 }
 
-@DriftDatabase(tables: [Inspections])
+@DataClassName('LocalWorkOrder')
+class CachedWorkOrders extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get code => text()();
+
+  TextColumn get title => text()();
+
+  TextColumn get description => text()();
+
+  TextColumn get address => text()();
+
+  TextColumn get priority => text()();
+
+  TextColumn get status => text()();
+
+  RealColumn get latitude => real()();
+
+  RealColumn get longitude => real()();
+
+  DateTimeColumn get scheduledAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+
+  TextColumn get notes => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Inspections, CachedWorkOrders])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'field_inspections'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (migrator) async {
+        await migrator.createAll();
+      },
+      onUpgrade: (migrator, from, to) async {
+        if (from < 2) {
+          await migrator.createTable(cachedWorkOrders);
+        }
+      },
+    );
+  }
 }
