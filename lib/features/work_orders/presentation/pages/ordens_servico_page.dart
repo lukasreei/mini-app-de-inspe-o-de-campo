@@ -13,6 +13,9 @@ import '../bloc/work_orders_bloc.dart';
 import '../bloc/work_orders_event.dart';
 import '../bloc/work_orders_state.dart';
 import 'detalhe_ordem_servico_page.dart';
+import '../../../inspections/data/repositories/inspections_repository.dart';
+import '../../../inspections/presentation/bloc/inspection_history_cubit.dart';
+import '../../../inspections/presentation/pages/historico_inspecoes_page.dart';
 
 class OrdensServicoPage extends StatelessWidget {
   const OrdensServicoPage({super.key});
@@ -38,6 +41,24 @@ class OrdensServicoPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Ordens de Serviço'),
           actions: [
+            IconButton(
+              tooltip: 'Histórico de inspeções',
+              icon: const Icon(Icons.history),
+              onPressed: () {
+                final repository = context.read<InspectionsRepository>();
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => InspectionHistoryCubit(
+                        inspectionsRepository: repository,
+                      )..start(),
+                      child: const HistoricoInspecoesPage(),
+                    ),
+                  ),
+                );
+              },
+            ),
             BlocBuilder<InspectionSyncCubit, InspectionSyncState>(
               builder: (context, syncState) {
                 return IconButton(
