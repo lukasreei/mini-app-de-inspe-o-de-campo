@@ -160,53 +160,89 @@ class _WorkOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final priorityColor = _priorityAccentColor(workOrder.priority);
+
     return Card(
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      workOrder.code,
-                      style: Theme.of(context).textTheme.labelLarge,
+        child: Ink(
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: priorityColor, width: 5)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        workOrder.code,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
+                    _PriorityChip(priority: workOrder.priority),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  workOrder.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
-                  _PriorityChip(priority: workOrder.priority),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                workOrder.title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.location_on_outlined, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(workOrder.address)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Text('Status: '),
-                  Text(
-                    _statusLabel(workOrder.status),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ],
+                ),
+
+                const SizedBox(height: 14),
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 19,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        workOrder.address,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    _StatusChip(status: workOrder.status),
+                    const Spacer(),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -221,7 +257,57 @@ class _PriorityChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(label: Text(_priorityLabel(priority)));
+    final backgroundColor = _priorityBackgroundColor(priority);
+
+    final foregroundColor = _priorityForegroundColor(priority);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        _priorityLabel(priority),
+        style: TextStyle(
+          color: foregroundColor,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _statusBackgroundColor(status),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_statusIcon(status), size: 16, color: Colors.black87),
+          const SizedBox(width: 6),
+          Text(
+            _statusLabel(status),
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -307,5 +393,85 @@ class _ErrorState extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Color _priorityBackgroundColor(String priority) {
+  switch (priority) {
+    case 'high':
+      return Colors.red.shade100;
+
+    case 'medium':
+      return Colors.amber.shade100;
+
+    case 'low':
+      return Colors.green.shade100;
+
+    default:
+      return Colors.grey.shade200;
+  }
+}
+
+Color _priorityForegroundColor(String priority) {
+  switch (priority) {
+    case 'high':
+      return Colors.red.shade800;
+
+    case 'medium':
+      return Colors.amber.shade900;
+
+    case 'low':
+      return Colors.green.shade800;
+
+    default:
+      return Colors.grey.shade800;
+  }
+}
+
+Color _statusBackgroundColor(String status) {
+  switch (status) {
+    case 'open':
+      return Colors.blue.shade100;
+
+    case 'in_progress':
+      return Colors.orange.shade100;
+
+    case 'done':
+      return Colors.green.shade100;
+
+    default:
+      return Colors.grey.shade200;
+  }
+}
+
+IconData _statusIcon(String status) {
+  switch (status) {
+    case 'open':
+      return Icons.assignment_outlined;
+
+    case 'in_progress':
+      return Icons.timelapse;
+
+    case 'done':
+      return Icons.check_circle_outline;
+
+    default:
+      return Icons.info_outline;
+  }
+}
+
+Color _priorityAccentColor(String priority) {
+  switch (priority) {
+    case 'high':
+      return Colors.red.shade500;
+
+    case 'medium':
+      return Colors.amber.shade600;
+
+    case 'low':
+      return Colors.green.shade500;
+
+    default:
+      return Colors.grey.shade500;
   }
 }

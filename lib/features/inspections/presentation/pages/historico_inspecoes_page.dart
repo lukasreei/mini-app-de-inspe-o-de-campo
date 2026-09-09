@@ -92,6 +92,12 @@ class _InspectionCard extends StatelessWidget {
     final isRetrying = retryingClientId == inspection.clientId;
 
     return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -107,7 +113,7 @@ class _InspectionCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Chip(label: Text(_statusLabel(inspection.syncStatus))),
+                _SyncStatusBadge(status: inspection.syncStatus),
               ],
             ),
             const SizedBox(height: 12),
@@ -118,22 +124,42 @@ class _InspectionCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             const SizedBox(height: 12),
-            Text('Condição: ${inspection.condition ?? '-'}'),
-            const SizedBox(height: 4),
-            Text(
-              'Tentativas de sincronização: '
-              '${inspection.syncAttempts}',
+            _InfoLine(
+              icon: Icons.health_and_safety_outlined,
+              text: 'Condição: ${inspection.condition ?? '-'}',
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Atualizado em: '
-              '${_formatDate(inspection.updatedAt)}',
+
+            const SizedBox(height: 8),
+
+            _InfoLine(
+              icon: Icons.sync,
+              text: 'Tentativas de sincronização: ${inspection.syncAttempts}',
+            ),
+
+            const SizedBox(height: 8),
+
+            _InfoLine(
+              icon: Icons.schedule_outlined,
+              text: 'Atualizado em ${_formatDate(inspection.updatedAt)}',
             ),
             if (inspection.errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                inspection.errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              const SizedBox(height: 14),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.error_outline, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(inspection.errorMessage!)),
+                  ],
+                ),
               ),
             ],
             if (inspection.syncStatus == 'failed') ...[
@@ -211,4 +237,103 @@ String _formatDate(DateTime date) {
 
   return '$day/$month/${local.year} '
       '$hour:$minute';
+}
+
+class _SyncStatusBadge extends StatelessWidget {
+  const _SyncStatusBadge({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: _statusColor(status),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_statusIcon(status), size: 16, color: Colors.black87),
+          const SizedBox(width: 6),
+          Text(
+            _statusLabel(status),
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Color _statusColor(String status) {
+  switch (status) {
+    case 'draft':
+      return Colors.grey.shade200;
+
+    case 'pending':
+      return Colors.amber.shade100;
+
+    case 'synced':
+      return Colors.green.shade100;
+
+    case 'failed':
+      return Colors.red.shade100;
+
+    default:
+      return Colors.grey.shade200;
+  }
+}
+
+IconData _statusIcon(String status) {
+  switch (status) {
+    case 'draft':
+      return Icons.edit_note;
+
+    case 'pending':
+      return Icons.schedule;
+
+    case 'synced':
+      return Icons.cloud_done_outlined;
+
+    case 'failed':
+      return Icons.error_outline;
+
+    default:
+      return Icons.info_outline;
+  }
+}
+
+class _InfoLine extends StatelessWidget {
+  const _InfoLine({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

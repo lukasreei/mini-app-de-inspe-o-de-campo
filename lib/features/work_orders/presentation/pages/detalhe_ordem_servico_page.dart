@@ -47,30 +47,38 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                 children: [
                   Text(
                     workOrder.code,
-                    style: Theme.of(context).textTheme.labelLarge,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+
+                  const SizedBox(height: 6),
+
                   Text(
                     workOrder.title,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 16),
+
+                  const SizedBox(height: 14),
+
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _PriorityBadge(priority: workOrder.priority),
+                      _StatusBadge(status: workOrder.status),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
 
                   _InfoCard(
+                    icon: Icons.info_outline,
                     title: 'Informações',
                     children: [
-                      _InfoRow(
-                        icon: Icons.flag_outlined,
-                        label: 'Prioridade',
-                        value: _priorityLabel(workOrder.priority),
-                      ),
-                      _InfoRow(
-                        icon: Icons.assignment_outlined,
-                        label: 'Status',
-                        value: _statusLabel(workOrder.status),
-                      ),
                       _InfoRow(
                         icon: Icons.calendar_today_outlined,
                         label: 'Agendamento',
@@ -82,17 +90,24 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   _InfoCard(
+                    icon: Icons.description_outlined,
                     title: 'Descrição',
-                    children: [Text(workOrder.description)],
+                    children: [
+                      Text(
+                        workOrder.description,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 16),
 
                   _InfoCard(
+                    icon: Icons.location_on_outlined,
                     title: 'Local',
                     children: [
                       _InfoRow(
-                        icon: Icons.location_on_outlined,
+                        icon: Icons.place_outlined,
                         label: 'Endereço',
                         value: workOrder.address,
                       ),
@@ -103,13 +118,21 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                       workOrder.notes!.trim().isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _InfoCard(
+                      icon: Icons.notes_outlined,
                       title: 'Observações',
                       children: [Text(workOrder.notes!)],
                     ),
                   ],
-                  const SizedBox(height: 24),
+
+                  const SizedBox(height: 28),
 
                   FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                     onPressed: () async {
                       final inspectionsRepository = context
                           .read<InspectionsRepository>();
@@ -136,11 +159,10 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.fact_check_outlined),
-                    label: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      child: Text('Iniciar inspeção'),
-                    ),
+                    label: const Text('Iniciar inspeção'),
                   ),
+
+                  const SizedBox(height: 24),
                 ],
               ),
             );
@@ -154,24 +176,52 @@ class DetalheOrdemServicoPage extends StatelessWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.title, required this.children});
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.children,
+  });
 
+  final IconData icon;
   final String title;
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             ...children,
@@ -281,4 +331,90 @@ String _formatDate(DateTime date) {
   final minute = date.minute.toString().padLeft(2, '0');
 
   return '$day/$month/${date.year} às $hour:$minute';
+}
+
+class _PriorityBadge extends StatelessWidget {
+  const _PriorityBadge({required this.priority});
+
+  final String priority;
+
+  @override
+  Widget build(BuildContext context) {
+    Color background;
+
+    switch (priority) {
+      case 'high':
+        background = Colors.red.shade100;
+        break;
+
+      case 'medium':
+        background = Colors.amber.shade100;
+        break;
+
+      case 'low':
+        background = Colors.green.shade100;
+        break;
+
+      default:
+        background = Colors.grey.shade200;
+    }
+
+    return _Badge(label: _priorityLabel(priority), backgroundColor: background);
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    Color background;
+
+    switch (status) {
+      case 'open':
+        background = Colors.blue.shade100;
+        break;
+
+      case 'in_progress':
+        background = Colors.orange.shade100;
+        break;
+
+      case 'done':
+        background = Colors.green.shade100;
+        break;
+
+      default:
+        background = Colors.grey.shade200;
+    }
+
+    return _Badge(label: _statusLabel(status), backgroundColor: background);
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.label, required this.backgroundColor});
+
+  final String label;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
 }
