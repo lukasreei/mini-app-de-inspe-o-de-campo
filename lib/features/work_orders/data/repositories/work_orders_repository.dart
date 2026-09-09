@@ -10,4 +10,8 @@ class WorkOrdersRepository {
   Future<List<WorkOrderModel>> getWorkOrders() {
     return _remoteDataSource.getWorkOrders();
   }
+
+  Future<WorkOrderModel> getWorkOrderById(String id) {
+    return _remoteDataSource.getWorkOrderById(id);
+  }
 }

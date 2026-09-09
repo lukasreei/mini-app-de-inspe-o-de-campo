@@ -6,10 +6,10 @@ import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/bloc/auth_event.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/auth/presentation/pages/login_page.dart';
-import '../features/work_orders/presentation/pages/ordens_servico_page.dart';
 import '../features/work_orders/data/repositories/work_orders_repository.dart';
 import '../features/work_orders/presentation/bloc/work_orders_bloc.dart';
 import '../features/work_orders/presentation/bloc/work_orders_event.dart';
+import '../features/work_orders/presentation/pages/ordens_servico_page.dart';
 
 class App extends StatelessWidget {
   const App({
@@ -55,11 +55,14 @@ class _AuthGate extends StatelessWidget {
         }
 
         if (state is AuthAuthenticated) {
-          return BlocProvider(
-            create: (_) =>
-                WorkOrdersBloc(workOrdersRepository: workOrdersRepository)
-                  ..add(const WorkOrdersRequested()),
-            child: const OrdensServicoPage(),
+          return RepositoryProvider.value(
+            value: workOrdersRepository,
+            child: BlocProvider(
+              create: (_) =>
+                  WorkOrdersBloc(workOrdersRepository: workOrdersRepository)
+                    ..add(const WorkOrdersRequested()),
+              child: const OrdensServicoPage(),
+            ),
           );
         }
 

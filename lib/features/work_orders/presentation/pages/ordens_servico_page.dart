@@ -7,6 +7,10 @@ import '../../data/models/work_order_model.dart';
 import '../bloc/work_orders_bloc.dart';
 import '../bloc/work_orders_event.dart';
 import '../bloc/work_orders_state.dart';
+import '../../data/repositories/work_orders_repository.dart';
+import '../bloc/work_order_detail_bloc.dart';
+import '../bloc/work_order_detail_event.dart';
+import 'detalhe_ordem_servico_page.dart';
 
 class OrdensServicoPage extends StatelessWidget {
   const OrdensServicoPage({super.key});
@@ -51,7 +55,31 @@ class OrdensServicoPage extends StatelessWidget {
                 itemCount: state.workOrders.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  return _WorkOrderCard(workOrder: state.workOrders[index]);
+                  final workOrder = state.workOrders[index];
+
+                  return _WorkOrderCard(
+                    workOrder: workOrder,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_) =>
+                                WorkOrderDetailBloc(
+                                  workOrdersRepository: context
+                                      .read<WorkOrdersRepository>(),
+                                )..add(
+                                  WorkOrderDetailRequested(
+                                    workOrderId: workOrder.id,
+                                  ),
+                                ),
+                            child: DetalheOrdemServicoPage(
+                              workOrderId: workOrder.id,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
             );
@@ -65,56 +93,61 @@ class OrdensServicoPage extends StatelessWidget {
 }
 
 class _WorkOrderCard extends StatelessWidget {
-  const _WorkOrderCard({required this.workOrder});
+  const _WorkOrderCard({required this.workOrder, required this.onTap});
 
   final WorkOrderModel workOrder;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    workOrder.code,
-                    style: Theme.of(context).textTheme.labelLarge,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      workOrder.code,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
                   ),
-                ),
-                _PriorityChip(priority: workOrder.priority),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              workOrder.title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.location_on_outlined, size: 20),
-                const SizedBox(width: 8),
-                Expanded(child: Text(workOrder.address)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Text('Status: '),
-                Text(
-                  _statusLabel(workOrder.status),
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ],
+                  _PriorityChip(priority: workOrder.priority),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                workOrder.title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.location_on_outlined, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(workOrder.address)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Text('Status: '),
+                  Text(
+                    _statusLabel(workOrder.status),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

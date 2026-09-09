@@ -16,4 +16,10 @@ class WorkOrdersRemoteDataSource {
         .map((item) => WorkOrderModel.fromJson(item as Map<String, dynamic>))
         .toList();
   }
+
+  Future<WorkOrderModel> getWorkOrderById(String id) async {
+    final response = await _apiClient.dio.get('/work-orders/$id');
+
+    return WorkOrderModel.fromJson(response.data as Map<String, dynamic>);
+  }
 }
