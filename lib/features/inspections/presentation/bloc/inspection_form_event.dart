@@ -25,3 +25,11 @@ final class InspectionLocationRequested extends InspectionFormEvent {
 final class InspectionGalleryPhotoRequested extends InspectionFormEvent {
   const InspectionGalleryPhotoRequested();
 }
+
+final class InspectionDraftSaveRequested extends InspectionFormEvent {
+  const InspectionDraftSaveRequested();
+}
+
+final class InspectionCompleteRequested extends InspectionFormEvent {
+  const InspectionCompleteRequested();
+}

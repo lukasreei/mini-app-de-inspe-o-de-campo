@@ -15,13 +15,26 @@ class FormularioInspecaoPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Nova Inspeção')),
       body: BlocConsumer<InspectionFormBloc, InspectionFormState>(
+        listenWhen: (previous, current) {
+          return previous.errorMessage != current.errorMessage ||
+              previous.saveStatus != current.saveStatus;
+        },
         listener: (context, state) {
-          final message = state.errorMessage;
-
-          if (message != null) {
+          if (state.errorMessage != null) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(message)));
+              ..showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+          }
+
+          if (state.saveMessage != null &&
+              state.saveStatus != InspectionFormSaveStatus.saving) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(state.saveMessage!)));
+          }
+
+          if (state.saveStatus == InspectionFormSaveStatus.pendingSaved) {
+            Navigator.of(context).pop();
           }
         },
         builder: (context, state) {
@@ -238,6 +251,47 @@ class FormularioInspecaoPage extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+
+              OutlinedButton.icon(
+                onPressed: state.isSaving
+                    ? null
+                    : () {
+                        context.read<InspectionFormBloc>().add(
+                          const InspectionDraftSaveRequested(),
+                        );
+                      },
+                icon: const Icon(Icons.save_outlined),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Text('Salvar rascunho'),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              FilledButton.icon(
+                onPressed: state.isSaving || !state.canComplete
+                    ? null
+                    : () {
+                        context.read<InspectionFormBloc>().add(
+                          const InspectionCompleteRequested(),
+                        );
+                      },
+                icon: state.isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check_circle_outline),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Text('Concluir inspeção'),
+                ),
+              ),
+
+              const SizedBox(height: 24),
             ],
           );
         },

@@ -8,6 +8,7 @@ import '../bloc/work_order_detail_state.dart';
 import '../../../inspections/data/services/inspection_device_service.dart';
 import '../../../inspections/presentation/bloc/inspection_form_bloc.dart';
 import '../../../inspections/presentation/pages/formulario_inspecao_page.dart';
+import '../../../inspections/data/repositories/inspections_repository.dart';
 
 class DetalheOrdemServicoPage extends StatelessWidget {
   const DetalheOrdemServicoPage({required this.workOrderId, super.key});
@@ -116,6 +117,8 @@ class DetalheOrdemServicoPage extends StatelessWidget {
                             create: (_) => InspectionFormBloc(
                               workOrderId: workOrder.id,
                               deviceService: InspectionDeviceService(),
+                              inspectionsRepository: context
+                                  .read<InspectionsRepository>(),
                             ),
                             child: const FormularioInspecaoPage(),
                           ),

@@ -4,14 +4,17 @@ import 'package:uuid/uuid.dart';
 import '../../data/services/inspection_device_service.dart';
 import 'inspection_form_event.dart';
 import 'inspection_form_state.dart';
+import '../../data/repositories/inspections_repository.dart';
 
 class InspectionFormBloc
     extends Bloc<InspectionFormEvent, InspectionFormState> {
   InspectionFormBloc({
     required String workOrderId,
     required InspectionDeviceService deviceService,
+    required InspectionsRepository inspectionsRepository,
     Uuid? uuid,
   }) : _deviceService = deviceService,
+       _inspectionsRepository = inspectionsRepository,
        super(
          InspectionFormState(
            clientId: (uuid ?? const Uuid()).v4(),
@@ -27,7 +30,13 @@ class InspectionFormBloc
     on<InspectionLocationRequested>(_onLocationRequested);
 
     on<InspectionGalleryPhotoRequested>(_onGalleryPhotoRequested);
+
+    on<InspectionDraftSaveRequested>(_onDraftSaveRequested);
+
+    on<InspectionCompleteRequested>(_onCompleteRequested);
   }
+
+  final InspectionsRepository _inspectionsRepository;
 
   final InspectionDeviceService _deviceService;
 
@@ -122,6 +131,94 @@ class InspectionFormBloc
         state.copyWith(
           isCapturingPhoto: false,
           errorMessage: 'Não foi possível selecionar a foto.',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDraftSaveRequested(
+    InspectionDraftSaveRequested event,
+    Emitter<InspectionFormState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        saveStatus: InspectionFormSaveStatus.saving,
+        clearSaveMessage: true,
+      ),
+    );
+
+    try {
+      await _inspectionsRepository.saveDraft(
+        clientId: state.clientId,
+        workOrderId: state.workOrderId,
+        observation: state.observation,
+        condition: state.condition,
+        photoPath: state.photoPath,
+        latitude: state.latitude,
+        longitude: state.longitude,
+      );
+
+      emit(
+        state.copyWith(
+          saveStatus: InspectionFormSaveStatus.draftSaved,
+          saveMessage: 'Rascunho salvo com sucesso.',
+        ),
+      );
+    } catch (_) {
+      emit(
+        state.copyWith(
+          saveStatus: InspectionFormSaveStatus.failure,
+          saveMessage: 'Não foi possível salvar o rascunho.',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCompleteRequested(
+    InspectionCompleteRequested event,
+    Emitter<InspectionFormState> emit,
+  ) async {
+    if (!state.canComplete) {
+      emit(
+        state.copyWith(
+          saveStatus: InspectionFormSaveStatus.failure,
+          saveMessage: 'Preencha observação, condição, foto e localização.',
+        ),
+      );
+
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        saveStatus: InspectionFormSaveStatus.saving,
+        clearSaveMessage: true,
+      ),
+    );
+
+    try {
+      await _inspectionsRepository.savePending(
+        clientId: state.clientId,
+        workOrderId: state.workOrderId,
+        observation: state.observation,
+        condition: state.condition,
+        photoPath: state.photoPath,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        capturedAt: DateTime.now(),
+      );
+
+      emit(
+        state.copyWith(
+          saveStatus: InspectionFormSaveStatus.pendingSaved,
+          saveMessage: 'Inspeção concluída e aguardando sincronização.',
+        ),
+      );
+    } catch (_) {
+      emit(
+        state.copyWith(
+          saveStatus: InspectionFormSaveStatus.failure,
+          saveMessage: 'Não foi possível concluir a inspeção.',
         ),
       );
     }

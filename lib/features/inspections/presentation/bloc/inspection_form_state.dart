@@ -1,3 +1,11 @@
+enum InspectionFormSaveStatus {
+  idle,
+  saving,
+  draftSaved,
+  pendingSaved,
+  failure,
+}
+
 class InspectionFormState {
   const InspectionFormState({
     required this.clientId,
@@ -10,6 +18,8 @@ class InspectionFormState {
     this.isCapturingPhoto = false,
     this.isGettingLocation = false,
     this.errorMessage,
+    this.saveStatus = InspectionFormSaveStatus.idle,
+    this.saveMessage,
   });
 
   final String clientId;
@@ -25,6 +35,11 @@ class InspectionFormState {
 
   final bool isCapturingPhoto;
   final bool isGettingLocation;
+
+  final InspectionFormSaveStatus saveStatus;
+  final String? saveMessage;
+
+  bool get isSaving => saveStatus == InspectionFormSaveStatus.saving;
 
   final String? errorMessage;
 
@@ -46,6 +61,9 @@ class InspectionFormState {
     bool? isGettingLocation,
     String? errorMessage,
     bool clearError = false,
+    InspectionFormSaveStatus? saveStatus,
+    String? saveMessage,
+    bool clearSaveMessage = false,
   }) {
     return InspectionFormState(
       clientId: clientId,
@@ -58,6 +76,8 @@ class InspectionFormState {
       isCapturingPhoto: isCapturingPhoto ?? this.isCapturingPhoto,
       isGettingLocation: isGettingLocation ?? this.isGettingLocation,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      saveStatus: saveStatus ?? this.saveStatus,
+      saveMessage: clearSaveMessage ? null : saveMessage ?? this.saveMessage,
     );
   }
 }
