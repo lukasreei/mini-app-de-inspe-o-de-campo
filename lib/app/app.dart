@@ -11,15 +11,19 @@ import '../features/work_orders/presentation/bloc/work_orders_bloc.dart';
 import '../features/work_orders/presentation/bloc/work_orders_event.dart';
 import '../features/work_orders/presentation/pages/ordens_servico_page.dart';
 
+import '../features/inspections/data/repositories/inspections_repository.dart';
+
 class App extends StatelessWidget {
   const App({
     required this.authRepository,
     required this.workOrdersRepository,
+    required this.inspectionsRepository,
     super.key,
   });
 
   final AuthRepository authRepository;
   final WorkOrdersRepository workOrdersRepository;
+  final InspectionsRepository inspectionsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +37,24 @@ class App extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: _AuthGate(workOrdersRepository: workOrdersRepository),
+        home: _AuthGate(
+          workOrdersRepository: workOrdersRepository,
+          inspectionsRepository: inspectionsRepository,
+        ),
       ),
     );
   }
 }
 
 class _AuthGate extends StatelessWidget {
-  const _AuthGate({required this.workOrdersRepository});
+  const _AuthGate({
+    required this.workOrdersRepository,
+    required this.inspectionsRepository,
+  });
 
   final WorkOrdersRepository workOrdersRepository;
+
+  final InspectionsRepository inspectionsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +67,11 @@ class _AuthGate extends StatelessWidget {
         }
 
         if (state is AuthAuthenticated) {
-          return RepositoryProvider.value(
-            value: workOrdersRepository,
+          return MultiRepositoryProvider(
+            providers: [
+              RepositoryProvider.value(value: workOrdersRepository),
+              RepositoryProvider.value(value: inspectionsRepository),
+            ],
             child: BlocProvider(
               create: (_) =>
                   WorkOrdersBloc(workOrdersRepository: workOrdersRepository)

@@ -7,6 +7,9 @@ import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/work_orders/data/datasources/work_orders_remote_data_source.dart';
 import 'features/work_orders/data/repositories/work_orders_repository.dart';
+import 'core/database/app_database.dart';
+import 'features/inspections/data/datasources/inspections_local_data_source.dart';
+import 'features/inspections/data/repositories/inspections_repository.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +33,21 @@ void main() {
     remoteDataSource: workOrdersRemoteDataSource,
   );
 
+  final database = AppDatabase();
+
+  final inspectionsLocalDataSource = InspectionsLocalDataSource(
+    database: database,
+  );
+
+  final inspectionsRepository = InspectionsRepository(
+    localDataSource: inspectionsLocalDataSource,
+  );
+
   runApp(
     App(
       authRepository: authRepository,
       workOrdersRepository: workOrdersRepository,
+      inspectionsRepository: inspectionsRepository,
     ),
   );
 }
