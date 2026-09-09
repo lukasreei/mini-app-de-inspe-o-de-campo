@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 
 import '../datasources/inspections_remote_data_source.dart';
 import '../models/inspection_sync_result.dart';
+import '../models/inspection_sync_summary.dart';
 
 class InspectionsRepository {
   InspectionsRepository({
@@ -143,12 +144,37 @@ class InspectionsRepository {
     }
   }
 
-  Future<void> syncPending() async {
+  Future<InspectionSyncSummary> syncPending() async {
     final inspections = await _localDataSource.getPending();
 
+    var synced = 0;
+    var pending = 0;
+    var failed = 0;
+
     for (final inspection in inspections) {
-      await syncInspection(inspection.clientId);
+      final result = await syncInspection(inspection.clientId);
+
+      switch (result) {
+        case InspectionSyncResult.synced:
+          synced++;
+          break;
+
+        case InspectionSyncResult.pending:
+          pending++;
+          break;
+
+        case InspectionSyncResult.failed:
+          failed++;
+          break;
+      }
     }
+
+    return InspectionSyncSummary(
+      attempted: inspections.length,
+      synced: synced,
+      pending: pending,
+      failed: failed,
+    );
   }
 
   String _dioErrorMessage(DioException error) {

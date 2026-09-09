@@ -3,13 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../inspections/presentation/bloc/inspection_sync_cubit.dart';
+import '../../../inspections/presentation/bloc/inspection_sync_state.dart';
 import '../../data/models/work_order_model.dart';
-import '../bloc/work_orders_bloc.dart';
-import '../bloc/work_orders_event.dart';
-import '../bloc/work_orders_state.dart';
 import '../../data/repositories/work_orders_repository.dart';
 import '../bloc/work_order_detail_bloc.dart';
 import '../bloc/work_order_detail_event.dart';
+import '../bloc/work_orders_bloc.dart';
+import '../bloc/work_orders_event.dart';
+import '../bloc/work_orders_state.dart';
 import 'detalhe_ordem_servico_page.dart';
 
 class OrdensServicoPage extends StatelessWidget {
@@ -17,76 +19,113 @@ class OrdensServicoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ordens de Serviço'),
-        actions: [
-          IconButton(
-            tooltip: 'Sair',
-            onPressed: () {
-              context.read<AuthBloc>().add(const LogoutRequested());
-            },
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      body: BlocBuilder<WorkOrdersBloc, WorkOrdersState>(
-        builder: (context, state) {
-          if (state is WorkOrdersLoading || state is WorkOrdersInitial) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return BlocListener<InspectionSyncCubit, InspectionSyncState>(
+      listenWhen: (previous, current) =>
+          previous.status != current.status ||
+          previous.message != current.message,
+      listener: (context, state) {
+        final message = state.message;
 
-          if (state is WorkOrdersFailure) {
-            return _ErrorState(message: state.message);
-          }
+        if (message == null) {
+          return;
+        }
 
-          if (state is WorkOrdersEmpty) {
-            return const _EmptyState();
-          }
-
-          if (state is WorkOrdersLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<WorkOrdersBloc>().add(const WorkOrdersRefreshed());
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(message)));
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Ordens de Serviço'),
+          actions: [
+            BlocBuilder<InspectionSyncCubit, InspectionSyncState>(
+              builder: (context, syncState) {
+                return IconButton(
+                  tooltip: 'Sincronizar agora',
+                  onPressed: syncState.isSyncing
+                      ? null
+                      : () {
+                          context.read<InspectionSyncCubit>().syncNow();
+                        },
+                  icon: syncState.isSyncing
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.sync),
+                );
               },
-              child: ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                itemCount: state.workOrders.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final workOrder = state.workOrders[index];
+            ),
+            IconButton(
+              tooltip: 'Sair',
+              onPressed: () {
+                context.read<AuthBloc>().add(const LogoutRequested());
+              },
+              icon: const Icon(Icons.logout),
+            ),
+          ],
+        ),
+        body: BlocBuilder<WorkOrdersBloc, WorkOrdersState>(
+          builder: (context, state) {
+            if (state is WorkOrdersLoading || state is WorkOrdersInitial) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                  return _WorkOrderCard(
-                    workOrder: workOrder,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider(
-                            create: (_) =>
-                                WorkOrderDetailBloc(
-                                  workOrdersRepository: context
-                                      .read<WorkOrdersRepository>(),
-                                )..add(
-                                  WorkOrderDetailRequested(
-                                    workOrderId: workOrder.id,
-                                  ),
-                                ),
-                            child: DetalheOrdemServicoPage(
-                              workOrderId: workOrder.id,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+            if (state is WorkOrdersFailure) {
+              return _ErrorState(message: state.message);
+            }
+
+            if (state is WorkOrdersEmpty) {
+              return const _EmptyState();
+            }
+
+            if (state is WorkOrdersLoaded) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<WorkOrdersBloc>().add(
+                    const WorkOrdersRefreshed(),
                   );
                 },
-              ),
-            );
-          }
+                child: ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.workOrders.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final workOrder = state.workOrders[index];
 
-          return const SizedBox.shrink();
-        },
+                    return _WorkOrderCard(
+                      workOrder: workOrder,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider(
+                              create: (_) =>
+                                  WorkOrderDetailBloc(
+                                    workOrdersRepository: context
+                                        .read<WorkOrdersRepository>(),
+                                  )..add(
+                                    WorkOrderDetailRequested(
+                                      workOrderId: workOrder.id,
+                                    ),
+                                  ),
+                              child: DetalheOrdemServicoPage(
+                                workOrderId: workOrder.id,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              );
+            }
+
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../features/auth/presentation/bloc/auth_event.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/inspections/data/repositories/inspections_repository.dart';
+import '../features/inspections/presentation/bloc/inspection_sync_cubit.dart';
 import '../features/work_orders/data/repositories/work_orders_repository.dart';
 import '../features/work_orders/presentation/bloc/work_orders_bloc.dart';
 import '../features/work_orders/presentation/bloc/work_orders_event.dart';
@@ -62,10 +63,19 @@ class _AuthGate extends StatelessWidget {
         }
 
         if (state is AuthAuthenticated) {
-          return BlocProvider(
-            create: (_) => WorkOrdersBloc(
-              workOrdersRepository: context.read<WorkOrdersRepository>(),
-            )..add(const WorkOrdersRequested()),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => WorkOrdersBloc(
+                  workOrdersRepository: context.read<WorkOrdersRepository>(),
+                )..add(const WorkOrdersRequested()),
+              ),
+              BlocProvider(
+                create: (_) => InspectionSyncCubit(
+                  inspectionsRepository: context.read<InspectionsRepository>(),
+                )..start(),
+              ),
+            ],
             child: const OrdensServicoPage(),
           );
         }
