@@ -7,11 +7,19 @@ import '../features/auth/presentation/bloc/auth_event.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/work_orders/presentation/pages/ordens_servico_page.dart';
+import '../features/work_orders/data/repositories/work_orders_repository.dart';
+import '../features/work_orders/presentation/bloc/work_orders_bloc.dart';
+import '../features/work_orders/presentation/bloc/work_orders_event.dart';
 
 class App extends StatelessWidget {
-  const App({required this.authRepository, super.key});
+  const App({
+    required this.authRepository,
+    required this.workOrdersRepository,
+    super.key,
+  });
 
   final AuthRepository authRepository;
+  final WorkOrdersRepository workOrdersRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -25,14 +33,16 @@ class App extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: const _AuthGate(),
+        home: _AuthGate(workOrdersRepository: workOrdersRepository),
       ),
     );
   }
 }
 
 class _AuthGate extends StatelessWidget {
-  const _AuthGate();
+  const _AuthGate({required this.workOrdersRepository});
+
+  final WorkOrdersRepository workOrdersRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +55,12 @@ class _AuthGate extends StatelessWidget {
         }
 
         if (state is AuthAuthenticated) {
-          return const OrdensServicoPage();
+          return BlocProvider(
+            create: (_) =>
+                WorkOrdersBloc(workOrdersRepository: workOrdersRepository)
+                  ..add(const WorkOrdersRequested()),
+            child: const OrdensServicoPage(),
+          );
         }
 
         return const LoginPage();
